@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chia Tiền Giặt Sấy KTX • HCMUE</title>
+  <title>Chia Tiền Giặt Sấy KTX • Laundry Split</title>
   <meta name="description" content="Công cụ tính và chia tiền giặt sấy KTX theo số lượng quần áo, tổng số Kg và tổng tiền hóa đơn." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -11,7 +11,363 @@
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet" />
 </head>
 <body class="min-h-screen flex flex-col selection:bg-emerald-600 selection:text-white">
-  <div id="app"></div>
+
+  <!-- HEADER -->
+  <header class="bg-surface border-b border-line sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white font-mono font-extrabold text-sm flex items-center justify-center shadow-xs shrink-0">
+          KG%
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-ink leading-tight">
+            Chia Tiền Giặt Sấy KTX
+          </h1>
+          <p class="text-xs text-muted">
+            Nhập hóa đơn &amp; số lượng đồ từng bạn → Xuất tiền chẵn dễ chuyển khoản
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button type="button" id="loadSampleBtn"
+          class="px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-semibold text-xs transition inline-flex items-center gap-1.5 shadow-2xs cursor-pointer"
+          title="Nạp bộ số liệu mẫu (3.3kg - 56.100đ)">
+          <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+          <span class="hidden sm:inline">Nạp dữ liệu mẫu</span>
+          <span class="sm:hidden">Mẫu</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="max-w-6xl mx-auto w-full px-4 py-5 flex-1">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- LEFT COLUMN (7 COLS) -->
+      <div class="lg:col-span-7 space-y-5">
+
+        <!-- BLOCK 1: BILL INFORMATION -->
+        <section class="bg-surface border border-line rounded-2xl p-4 sm:p-5 shadow-xs">
+          <div class="flex items-center justify-between gap-2 mb-4">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-slate-900 text-white font-mono text-xs font-bold flex items-center justify-center">1</span>
+              <h2 class="text-sm sm:text-base font-extrabold text-ink uppercase tracking-tight">Thông Tin Hóa Đơn (Bill)</h2>
+            </div>
+            <span id="priceRuleChip" class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200">
+              ⚡ 17.000đ/kg • Sàn 42k
+            </span>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
+              Loại hình thức giặt
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <button type="button" id="modeBtnNormal" data-action="set-wash-mode" data-mode="normal"
+                class="p-3.5 rounded-xl border text-left transition flex items-center justify-between gap-2 cursor-pointer">
+                <div>
+                  <div class="text-sm font-extrabold text-ink">Giặt Thường</div>
+                  <div class="text-xs text-muted mt-0.5">12k/kg • Tối thiểu 30k</div>
+                </div>
+                <span class="font-mono text-sm font-extrabold px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800">12K</span>
+              </button>
+
+              <button type="button" id="modeBtnUrgent" data-action="set-wash-mode" data-mode="urgent"
+                class="p-3.5 rounded-xl border-2 text-left transition flex items-center justify-between gap-2 cursor-pointer">
+                <div>
+                  <div class="text-sm font-extrabold text-ink">⚡ Giặt Khẩn Cấp</div>
+                  <div class="text-xs text-muted mt-0.5">17k/kg • Tối thiểu 42k</div>
+                </div>
+                <span class="font-mono text-sm font-extrabold px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800">17K</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-3 border-t border-line">
+            <div class="bg-slate-50 p-3.5 rounded-xl border border-line">
+              <div class="flex items-center justify-between mb-1.5 gap-1">
+                <label for="inputTotalKg" class="text-xs font-extrabold text-ink uppercase tracking-wider">
+                  Số Kg tổng (trên cân)
+                </label>
+                <button type="button" id="syncKgBtn"
+                  class="text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 underline underline-offset-2 cursor-pointer"
+                  title="Lấy tổng Kg ước tính từ số lượng quần áo bên dưới">
+                  Ước lượng (~<span id="hintEstimatedKg">0.00</span>kg)
+                </button>
+              </div>
+              <div class="relative flex items-center">
+                <input type="number" id="inputTotalKg" step="0.1" min="0" value="3.3"
+                  class="w-full pl-3.5 pr-12 py-2.5 rounded-xl border border-slate-300 bg-white font-mono text-lg font-extrabold text-ink focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 tabular-nums" />
+                <span class="absolute right-3.5 font-mono text-sm font-bold text-muted">Kg</span>
+              </div>
+              <p class="text-[11px] text-muted mt-1.5">
+                Giữ nguyên số Kg thật trên cân khi tự sửa tiền.
+              </p>
+            </div>
+
+            <div class="bg-slate-50 p-3.5 rounded-xl border border-line">
+              <div class="flex items-center justify-between mb-1.5 gap-1">
+                <label for="inputTotalMoney" class="text-xs font-extrabold text-ink uppercase tracking-wider">
+                  Số tiền tổng (VNĐ)
+                </label>
+                <button type="button" id="syncMoneyBtn"
+                  class="text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 underline underline-offset-2 cursor-pointer"
+                  title="Tính lại tiền theo Số Kg tổng × Đơn giá">
+                  Tính lại theo Kg
+                </button>
+              </div>
+              <div class="relative flex items-center">
+                <input type="number" id="inputTotalMoney" step="100" min="0" value="56100"
+                  class="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-300 bg-white font-mono text-lg font-extrabold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 tabular-nums" />
+                <span class="absolute right-3.5 font-mono text-sm font-bold text-muted">đ</span>
+              </div>
+              <p class="text-[11px] text-muted mt-1.5" id="moneyFormulaHint">
+                3.3 kg × 17.000đ/kg = 56.100đ
+              </p>
+            </div>
+          </div>
+
+          <div id="billReconcileBar" class="mt-3.5 px-3.5 py-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <span id="reconcileLeftText" class="font-semibold text-emerald-900"></span>
+            <span id="reconcileRightText" class="font-mono text-[11px] text-emerald-700 font-bold"></span>
+          </div>
+        </section>
+
+        <!-- BLOCK 2: MEMBERS & CLOTHING COUNTS -->
+        <section class="bg-surface border border-line rounded-2xl p-4 sm:p-5 shadow-xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3 pb-3 border-b border-line">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-slate-900 text-white font-mono text-xs font-bold flex items-center justify-center">2</span>
+              <div>
+                <h2 class="text-sm sm:text-base font-extrabold text-ink uppercase tracking-tight">Tên &amp; Số Lượng Đồ Từng Người</h2>
+                <p class="text-xs text-muted">Đếm theo đơn vị <strong>Cái</strong> trên bill tiệm (1 bộ = 2 cái)</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 flex-wrap">
+              <button type="button" id="toggleOtherBtn" aria-pressed="false"
+                class="px-2.5 py-1.5 rounded-lg border border-line bg-white hover:bg-slate-50 text-xs font-semibold text-muted hover:text-ink transition inline-flex items-center gap-1 cursor-pointer">
+                <span>+ Mục Khác</span>
+              </button>
+
+              <button type="button" id="toggleGramBtn"
+                class="px-2.5 py-1.5 rounded-lg border border-line bg-white hover:bg-slate-50 text-xs font-semibold text-muted hover:text-ink transition inline-flex items-center gap-1 cursor-pointer">
+                <span>⚖️ Định mức gram</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Collapsible Gram Calibration Drawer -->
+          <div id="gramSettingsDrawer" class="hidden mb-4 p-3.5 rounded-xl bg-slate-50 border border-line">
+            <div class="flex items-center justify-between gap-2 mb-2.5">
+              <span class="text-xs font-bold text-ink">Định mức quy đổi (gram / 1 cái):</span>
+              <button type="button" id="resetDefaultGramsBtn" class="text-[11px] font-bold text-emerald-700 hover:underline cursor-pointer">
+                Mặc định chuẩn
+              </button>
+            </div>
+            <div id="gramInputsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
+          </div>
+
+          <div id="membersContainer" class="space-y-3"></div>
+
+          <div class="mt-4 pt-3 border-t border-line flex items-center justify-between gap-3">
+            <button type="button" id="addMemberBtn"
+              class="flex-1 py-2.5 px-4 rounded-xl border-2 border-dashed border-emerald-600/40 hover:border-emerald-600 bg-emerald-50/40 hover:bg-emerald-50 text-emerald-700 font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 transition cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+              </svg>
+              <span>Thêm Người Cùng Giặt</span>
+            </button>
+
+            <button type="button" id="resetCountsBtn"
+              class="px-3.5 py-2.5 rounded-xl border border-line bg-white hover:bg-slate-50 text-xs font-semibold text-muted hover:text-ink transition cursor-pointer">
+              Xóa số đồ về 0
+            </button>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- RIGHT COLUMN (5 COLS): RESULTS -->
+      <div id="resultsColumn" class="lg:col-span-5 lg:sticky lg:top-20 space-y-4">
+
+        <section class="bg-surface border-2 border-slate-900 rounded-2xl shadow-md overflow-hidden">
+          <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between gap-2">
+            <div>
+              <span class="inline-block text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-600 text-white">
+                Kết quả chia tiền
+              </span>
+              <h2 class="text-base sm:text-lg font-extrabold tracking-tight mt-1">
+                Tiền Mỗi Người Phải Trả
+              </h2>
+            </div>
+            <div class="text-right font-mono">
+              <div class="text-[11px] text-slate-400">Tổng bill cần thu</div>
+              <div id="outHeaderTotalMoney" class="text-xl sm:text-2xl font-extrabold text-emerald-400 tabular-nums">56.100đ</div>
+            </div>
+          </div>
+
+          <div class="px-4 py-2.5 bg-slate-50 border-b border-line space-y-2">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <span class="text-xs font-bold text-ink">Bước làm tròn:</span>
+              <div class="inline-flex rounded-lg p-0.5 bg-slate-200/80 border border-line">
+                <button type="button" id="roundStepBtn-1000" data-action="set-round-step" data-step="1000"
+                  class="px-2.5 py-1 rounded-md text-xs font-mono font-bold transition">1.000đ</button>
+                <button type="button" id="roundStepBtn-500" data-action="set-round-step" data-step="500"
+                  class="px-2.5 py-1 rounded-md text-xs font-mono font-bold transition">500đ</button>
+                <button type="button" id="roundStepBtn-100" data-action="set-round-step" data-step="100"
+                  class="px-2.5 py-1 rounded-md text-xs font-mono font-bold transition">100đ</button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <span class="text-[11px] font-semibold text-muted">Hướng làm tròn tổng bill:</span>
+              <div class="inline-flex rounded-lg p-0.5 bg-slate-200/80 border border-line">
+                <button type="button" id="roundModeNearestBtn" data-action="set-round-mode" data-mode="nearest"
+                  class="px-2 py-0.5 rounded text-[11px] font-bold transition">Gần nhất</button>
+                <button type="button" id="roundModeCeilBtn" data-action="set-round-mode" data-mode="ceil"
+                  class="px-2 py-0.5 rounded text-[11px] font-semibold transition">Làm tròn lên (không lỗ)</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 divide-x divide-line border-b border-line text-center bg-white">
+            <div class="p-2.5">
+              <div class="text-[11px] text-muted">Tổng số lượng</div>
+              <div id="outSummaryItems" class="font-mono text-sm sm:text-base font-extrabold text-ink mt-0.5 tabular-nums">0 cái</div>
+            </div>
+            <div class="p-2.5">
+              <div class="text-[11px] text-muted">Tổng số KG</div>
+              <div id="outSummaryKg" class="font-mono text-sm sm:text-base font-extrabold text-emerald-700 mt-0.5 tabular-nums">0.00 kg</div>
+            </div>
+            <div class="p-2.5">
+              <div class="text-[11px] text-muted">Tổng tiền chia</div>
+              <div id="outSummaryCollected" class="font-mono text-sm sm:text-base font-extrabold text-ink mt-0.5 tabular-nums">0đ</div>
+            </div>
+          </div>
+
+          <div class="px-4 pt-3 pb-1">
+            <div id="proportionBar" class="w-full h-2.5 rounded-full overflow-hidden bg-slate-100 flex"></div>
+          </div>
+
+          <div id="payoutCardsList" class="p-4 space-y-2.5"></div>
+
+          <div class="px-4 pb-3">
+            <div id="roundingFootnote" class="p-2.5 rounded-xl bg-slate-50 border border-line text-[11px] text-muted leading-relaxed"></div>
+          </div>
+
+          <!-- BANK / VIETQR ACCORDION -->
+          <div class="border-t border-line bg-slate-50/70">
+            <button type="button" id="toggleBankBtn"
+              class="w-full px-4 py-2.5 flex items-center justify-between text-left hover:bg-slate-100/70 transition cursor-pointer">
+              <div class="flex items-center gap-2">
+                <span class="text-sm">🏦</span>
+                <div>
+                  <div class="text-xs font-bold text-ink">Cài STK nhận tiền &amp; Tạo mã VietQR từng bạn</div>
+                  <div id="bankPreviewLabel" class="text-[11px] text-muted">Chưa cài STK (bấm để nhập)</div>
+                </div>
+              </div>
+              <svg id="bankDrawerArrow" class="w-4 h-4 text-muted transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+
+            <div id="bankDrawerBody" class="hidden px-4 pb-3.5 pt-2 border-t border-line space-y-2">
+              <div class="grid grid-cols-2 gap-2">
+                <select id="bankCodeSelect"
+                  class="px-2.5 py-1.5 rounded-lg border border-line bg-white text-xs font-semibold text-ink focus:outline-none focus:ring-1 focus:ring-emerald-600">
+                  <option value="">-- Ngân hàng --</option>
+                  <option value="MB">MB Bank</option>
+                  <option value="VCB">Vietcombank</option>
+                  <option value="TCB">Techcombank</option>
+                  <option value="BIDV">BIDV</option>
+                  <option value="ICB">VietinBank</option>
+                  <option value="ACB">ACB</option>
+                  <option value="TPB">TPBank</option>
+                  <option value="VPB">VPBank</option>
+                  <option value="TIMO">Timo</option>
+                  <option value="CAKE">CAKE</option>
+                  <option value="MOMO">Ví MoMo</option>
+                </select>
+                <input type="text" id="bankAccountNo" placeholder="Số tài khoản..."
+                  class="px-2.5 py-1.5 rounded-lg border border-line bg-white font-mono text-xs font-bold text-ink focus:outline-none focus:ring-1 focus:ring-emerald-600" />
+              </div>
+              <input type="text" id="bankOwnerName" placeholder="Tên chủ TK không dấu (VD: NGUYEN VAN A)"
+                class="w-full px-2.5 py-1.5 rounded-lg border border-line bg-white text-xs font-semibold uppercase text-ink focus:outline-none focus:ring-1 focus:ring-emerald-600" />
+              <p id="momoQrNotice" class="hidden text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
+                Ví MoMo chưa hỗ trợ tạo ảnh VietQR tự động theo từng bạn; thông tin MoMo vẫn được gắn vào tin nhắn Zalo bên dưới.
+              </p>
+            </div>
+          </div>
+
+          <!-- ZALO MESSAGE -->
+          <div class="p-4 bg-white border-t border-line space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-ink">Tin nhắn báo tiền gửi Zalo phòng</span>
+              <span id="copiedToast" class="hidden text-[11px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                ✓ Đã copy!
+              </span>
+            </div>
+            <textarea id="zaloTextBox" readonly rows="6"
+              class="w-full p-2.5 rounded-xl bg-slate-50 border border-line font-mono text-[11px] leading-relaxed text-ink focus:outline-none resize-y"></textarea>
+
+            <button type="button" id="copyZaloBtn"
+              class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-sm inline-flex items-center justify-center gap-2 shadow-xs transition cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+              </svg>
+              <span>Copy Tin Nhắn Báo Tiền Zalo</span>
+            </button>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- CLEAN COMPACT FOOTER -->
+  <footer class="max-w-6xl mx-auto w-full px-4 py-4 mt-4 border-t border-line">
+    <div class="bg-surface border border-line rounded-xl px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-muted">
+      <div>
+        <span class="font-bold text-ink">Lưu ý khi gom đồ:</span> Không gửi đồ lót &amp; vớ • Nên gom ≥ 2.5kg để tối ưu mức giá sàn.
+      </div>
+      <div class="font-mono text-[11px]">
+        Dữ liệu lưu cục bộ trên trình duyệt của bạn
+      </div>
+    </div>
+  </footer>
+
+  <!-- VIETQR MODAL -->
+  <div id="vietQrModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="qrTitle">
+    <div class="bg-surface border border-line rounded-2xl max-w-sm w-full p-5 shadow-xl text-center">
+      <div class="flex items-center justify-between pb-3 border-b border-line">
+        <h3 id="qrTitle" class="text-sm font-extrabold text-ink uppercase">Mã VietQR Chuyển Khoản</h3>
+        <button type="button" data-action="close-qr" aria-label="Đóng hộp thoại QR" class="p-1 rounded-lg text-muted hover:text-ink cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="py-4">
+        <p id="qrImageStatus" class="hidden text-xs py-6"></p>
+        <img id="qrImage" src="" alt="Mã VietQR" class="w-60 h-auto mx-auto rounded-xl border border-line" />
+        <div id="qrAmountText" class="font-mono text-xl font-extrabold text-emerald-700 mt-3"></div>
+        <div id="qrBankSubtitle" class="text-xs text-muted mt-1"></div>
+      </div>
+      <button type="button" data-action="close-qr" class="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer">
+        Đóng
+      </button>
+    </div>
+  </div>
+
+  <!-- FLOATING TOAST -->
+  <div id="appToast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-3 text-xs font-semibold">
+    <span data-toast-message></span>
+    <button type="button" data-toast-action class="hidden px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold cursor-pointer"></button>
+  </div>
+
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
