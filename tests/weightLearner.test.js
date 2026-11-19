@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CLOTHING_CATEGORIES } from '../src/config/categories.js';
+import { CLOTHING_CATEGORIES, getDefaultGrams } from '../src/config/categories.js';
 import { trainWeights } from '../src/core/weightLearner.js';
 
 // Deterministic PRNG for reproducible synthetic laundry experiments
@@ -100,5 +100,18 @@ describe('weightLearner (bounded robust regression + LOOCV)', () => {
     expect(result.validBillsCount).toBe(1);
     expect(result.excludedCount).toBe(2);
     expect(result.improved).toBe(false);
+  });
+
+  it('getDefaultGrams merges learned overrides safely clamped inside physical bounds', () => {
+    const merged = getDefaultGrams({
+      towel: 90, // below minGram 150 -> should clamp to 150
+      military: 350,
+      longPants: 1200 // above maxGram 850 -> should clamp to 850
+    });
+
+    expect(merged.towel).toBe(150);
+    expect(merged.military).toBe(350);
+    expect(merged.longPants).toBe(850);
+    expect(merged.sport).toBe(175);
   });
 });

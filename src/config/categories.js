@@ -1,3 +1,5 @@
+import { LEARNED_WEIGHTS_META, LEARNED_WEIGHTS_OVERRIDES } from './learnedWeights.js';
+
 /**
  * Clothing categories calibrated for KTX laundry bills (1 piece = 1 unit; 1 set = 2 pieces).
  * Bounds [minGram, maxGram] enforce physical constraints during weight calibration.
@@ -98,15 +100,27 @@ export const BADGE_COLORS = [
 ];
 
 /**
- * Returns a fresh map of default gram weights keyed by category ID.
+ * Returns a fresh map of default gram weights keyed by category ID,
+ * merging any deployed learned weight overrides clamped to physical bounds.
+ * @param {Record<string, number>} [overrides]
  * @returns {Record<string, number>}
  */
-export function getDefaultGrams() {
+export function getDefaultGrams(overrides = LEARNED_WEIGHTS_OVERRIDES) {
   const grams = {};
   for (const cat of CLOTHING_CATEGORIES) {
-    grams[cat.id] = cat.defaultGram;
+    const raw = overrides?.[cat.id];
+    const parsed = Number.parseInt(raw, 10);
+    if (Number.isFinite(parsed)) {
+      grams[cat.id] = Math.max(cat.minGram, Math.min(cat.maxGram, parsed));
+    } else {
+      grams[cat.id] = cat.defaultGram;
+    }
   }
   return grams;
+}
+
+export function getLearnedWeightsMeta() {
+  return LEARNED_WEIGHTS_META;
 }
 
 /**
