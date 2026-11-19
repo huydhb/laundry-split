@@ -1,14 +1,32 @@
 import './styles/main.css';
 import { computeSplit } from './core/splitEngine.js';
+import {
+  addBillToHistory,
+  createBillSnapshot,
+  deleteBillFromHistory,
+  exportAnonymizedHistoryJson,
+  importAnonymizedHistoryJson,
+  loadBillHistory,
+  saveBillHistory,
+  toggleExcludeBill
+} from './state/billHistory.js';
 import { loadState, saveState, stateActions } from './state/store.js';
 import { renderBillForm, syncBillInputs } from './ui/billForm.js';
+import {
+  closeCalibrationModal,
+  openCalibrationModal,
+  renderCalibrationContent,
+  renderHistoryBadge
+} from './ui/calibrationModal.js';
 import { copyToClipboard, showToast } from './ui/domUtils.js';
 import { patchMemberCards, renderGramInputs, renderMemberCards } from './ui/memberList.js';
 import { closeQrModal, openQrModal } from './ui/qrModal.js';
 import { renderSummaryPanel, syncBankInputs } from './ui/summaryPanel.js';
 
 let appState = loadState();
+let billHistory = loadBillHistory();
 let latestCalc = null;
+let latestCalReport = null;
 
 function renderAll({ fullMembers = true, syncInputs = false } = {}) {
   saveState(appState);
@@ -72,6 +90,25 @@ function handleActionClick(event) {
 
   if (action === 'close-qr') {
     closeQrModal();
+    return;
+  }
+
+  if (action === 'close-calibration') {
+    closeCalibrationModal();
+    return;
+  }
+
+  if (action === 'toggle-bill-exclude') {
+    billHistory = toggleExcludeBill(billHistory, target.dataset.billId);
+    saveBillHistory(billHistory);
+    latestCalReport = renderCalibrationContent(appState, billHistory);
+    return;
+  }
+
+  if (action === 'delete-history-bill') {
+    billHistory = deleteBillFromHistory(billHistory, target.dataset.billId);
+    saveBillHistory(billHistory);
+    latestCalReport = renderCalibrationContent(appState, billHistory);
   }
 }
 
@@ -209,13 +246,86 @@ function bindEvents() {
     if (e.target.id === 'vietQrModal') closeQrModal();
   });
 
+  document.getElementById('calibrationModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'calibrationModal') closeCalibrationModal();
+  });
+
+  document.getElementById('openCalibrationBtn')?.addEventListener('click', () => {
+    latestCalReport = openCalibrationModal(appState, billHistory);
+  });
+
+  document.getElementById('saveBillQuickBtn')?.addEventListener('click', () => {
+    const excludeCheck = document.getElementById('excludeTrainCheckbox');
+    const snap = createBillSnapshot(appState, latestCalc, {
+      excludeFromTrain: Boolean(excludeCheck?.checked)
+    });
+    if (!snap) {
+      showToast('Cần nhập Số Kg > 0 và ít nhất 1 món đồ để lưu bill.', { durationMs: 3000 });
+      return;
+    }
+    billHistory = addBillToHistory(billHistory, snap);
+    saveBillHistory(billHistory);
+    renderHistoryBadge(billHistory);
+    if (excludeCheck) excludeCheck.checked = false;
+    showToast(`Đã lưu bill ${snap.actualKg.toFixed(2)}kg (${snap.totalItems} cái) vào lịch sử!`, { durationMs: 3000 });
+  });
+
+  document.getElementById('applyLearnedWeightsBtn')?.addEventListener('click', () => {
+    if (!latestCalReport?.improved) return;
+    stateActions.applyLearnedGrams(appState, latestCalReport.weights);
+    renderGramInputs(appState);
+    renderAll({ fullMembers: false });
+    latestCalReport = renderCalibrationContent(appState, billHistory);
+    showToast('Đã áp dụng định mức gram tối ưu mới!', { durationMs: 2800 });
+  });
+
+  document.getElementById('exportHistoryBtn')?.addEventListener('click', () => {
+    if (billHistory.length === 0) {
+      showToast('Chưa có hóa đơn nào để xuất.', { durationMs: 2500 });
+      return;
+    }
+    const blob = new Blob([exportAnonymizedHistoryJson(billHistory)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `laundry-bills-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    showToast(`Đã xuất ${billHistory.length} hóa đơn ẩn danh.`, { durationMs: 2500 });
+  });
+
+  document.getElementById('importHistoryBtn')?.addEventListener('click', () => {
+    document.getElementById('importHistoryFileInput')?.click();
+  });
+
+  document.getElementById('importHistoryFileInput')?.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const { history, importedCount, skippedCount } = importAnonymizedHistoryJson(text, billHistory);
+      billHistory = history;
+      saveBillHistory(billHistory);
+      latestCalReport = renderCalibrationContent(appState, billHistory);
+      showToast(`Đã nhập ${importedCount} bill mới (bỏ qua ${skippedCount}).`, { durationMs: 3000 });
+    } catch {
+      showToast('File JSON không hợp lệ, không thể nhập.', { durationMs: 3000 });
+    } finally {
+      e.target.value = '';
+    }
+  });
+
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeQrModal();
+    if (e.key === 'Escape') {
+      closeQrModal();
+      closeCalibrationModal();
+    }
   });
 }
 
 window.addEventListener('DOMContentLoaded', () => {
   renderGramInputs(appState);
+  renderHistoryBadge(billHistory);
   renderAll({ fullMembers: true, syncInputs: true });
   bindEvents();
 });

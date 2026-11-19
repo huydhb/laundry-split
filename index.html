@@ -30,6 +30,13 @@
       </div>
 
       <div class="flex items-center gap-2">
+        <button type="button" id="openCalibrationBtn"
+          class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink border border-line font-semibold text-xs transition inline-flex items-center gap-1.5 cursor-pointer"
+          title="Xem lịch sử bill và tối ưu định mức gram tự động">
+          <span>📊 Lịch sử &amp; Train</span>
+          <span id="historyCountBadge" class="font-mono px-1.5 py-0.5 rounded-md bg-slate-900 text-white text-[10px] font-bold">0</span>
+        </button>
+
         <button type="button" id="loadSampleBtn"
           class="px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-semibold text-xs transition inline-flex items-center gap-1.5 shadow-2xs cursor-pointer"
           title="Nạp bộ số liệu mẫu (3.3kg - 56.100đ)">
@@ -132,6 +139,17 @@
           <div id="billReconcileBar" class="mt-3.5 px-3.5 py-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 flex flex-wrap items-center justify-between gap-2 text-xs">
             <span id="reconcileLeftText" class="font-semibold text-emerald-900"></span>
             <span id="reconcileRightText" class="font-mono text-[11px] text-emerald-700 font-bold"></span>
+          </div>
+
+          <div class="mt-3 pt-3 border-t border-line flex flex-wrap items-center justify-between gap-2">
+            <label class="inline-flex items-center gap-2 text-xs text-muted cursor-pointer select-none">
+              <input type="checkbox" id="excludeTrainCheckbox" class="w-3.5 h-3.5 accent-amber-600 rounded" />
+              <span>Đồ bị ướt/bất thường (lưu lịch sử nhưng không dùng train)</span>
+            </label>
+            <button type="button" id="saveBillQuickBtn"
+              class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition cursor-pointer">
+              + Lưu Bill vào lịch sử
+            </button>
           </div>
         </section>
 
@@ -385,6 +403,84 @@
       <button type="button" data-action="close-qr" class="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer">
         Đóng
       </button>
+    </div>
+  </div>
+
+  <!-- CALIBRATION & HISTORY MODAL -->
+  <div id="calibrationModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="calModalTitle">
+    <div class="bg-surface border border-line rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-line flex items-center justify-between gap-3">
+        <div>
+          <h3 id="calModalTitle" class="text-sm sm:text-base font-extrabold text-ink uppercase">Lịch Sử Bill &amp; Tự Học Định Mức Gram</h3>
+          <p class="text-xs text-muted mt-0.5">Học trọng lượng từng nhóm đồ chỉ từ tổng Kg thật &amp; số lượng trên hóa đơn (kiểm định LOOCV)</p>
+        </div>
+        <button type="button" data-action="close-calibration" aria-label="Đóng hộp thoại tối ưu" class="p-1.5 rounded-lg text-muted hover:text-ink cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto space-y-4">
+        <div class="grid grid-cols-3 gap-2.5 text-center">
+          <div class="p-3 rounded-xl bg-slate-50 border border-line">
+            <div class="text-[11px] text-muted">Bill dùng để học</div>
+            <div id="calValidCount" class="font-mono text-base font-extrabold text-ink mt-0.5">0 bill</div>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-line">
+            <div class="text-[11px] text-muted">Sai số mặc định</div>
+            <div id="calDefaultMae" class="font-mono text-base font-extrabold text-muted mt-0.5">0g</div>
+          </div>
+          <div class="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200">
+            <div class="text-[11px] text-emerald-800 font-semibold">Sai số sau học (LOOCV)</div>
+            <div id="calLearnedMae" class="font-mono text-base font-extrabold text-emerald-700 mt-0.5">0g</div>
+          </div>
+        </div>
+
+        <div id="calRecommendationBanner"></div>
+
+        <div class="border border-line rounded-xl overflow-hidden">
+          <div class="px-3.5 py-2.5 bg-slate-50 border-b border-line flex items-center justify-between gap-2">
+            <span class="text-xs font-extrabold text-ink">Bảng trọng lượng ước lượng (g/cái)</span>
+            <button type="button" id="applyLearnedWeightsBtn" disabled
+              class="px-4 py-2 rounded-xl bg-slate-200 text-slate-500 text-xs font-bold cursor-not-allowed">
+              Áp dụng định mức mới
+            </button>
+          </div>
+          <div class="p-3 overflow-x-auto">
+            <table class="w-full text-xs">
+              <thead>
+                <tr class="text-[11px] text-muted uppercase">
+                  <th class="text-left pb-2 pr-2">Loại đồ</th>
+                  <th class="text-center pb-2 px-2">Số bill</th>
+                  <th class="text-right pb-2 px-2">Đang dùng</th>
+                  <th class="text-right pb-2 px-2">Đề xuất</th>
+                  <th class="text-right pb-2 pl-2">Tin cậy</th>
+                </tr>
+              </thead>
+              <tbody id="calWeightsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-extrabold text-ink uppercase">Danh sách hóa đơn đã lưu</span>
+            <div class="flex items-center gap-2">
+              <button type="button" id="exportHistoryBtn"
+                class="px-2.5 py-1.5 rounded-lg border border-line bg-white hover:bg-slate-50 text-xs font-semibold text-ink transition cursor-pointer">
+                Xuất JSON ẩn danh
+              </button>
+              <button type="button" id="importHistoryBtn"
+                class="px-2.5 py-1.5 rounded-lg border border-line bg-white hover:bg-slate-50 text-xs font-semibold text-ink transition cursor-pointer">
+                Nhập JSON
+              </button>
+              <input type="file" id="importHistoryFileInput" accept=".json,application/json" class="hidden" />
+            </div>
+          </div>
+          <div id="calHistoryList" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
+        </div>
+      </div>
     </div>
   </div>
 
