@@ -36,9 +36,41 @@ export function renderGramInputs(state) {
 }
 
 /**
+ * Renders the room-wide category totals strip so users can cross-check against the paper receipt.
+ */
+export function renderRoomTotalsStrip(calc) {
+  const strip = document.getElementById('roomTotalsStrip');
+  if (!strip) return;
+
+  if (!calc.hasItems) {
+    strip.innerHTML =
+      '<span class="text-muted">Tổng đồ cả phòng: <strong class="text-ink">0 cái</strong> — bấm + hoặc gõ số để nhập đồ từng bạn.</span>';
+    return;
+  }
+
+  const chips = CLOTHING_CATEGORIES.filter((cat) => (calc.categoryTotals[cat.id] || 0) > 0)
+    .map(
+      (cat) =>
+        `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-line font-mono text-[11px] font-bold text-ink">${calc.categoryTotals[cat.id]} <span class="font-sans font-semibold text-muted">${escapeHtml(cat.short)}</span></span>`
+    )
+    .join('');
+
+  strip.innerHTML = `
+    <div class="flex flex-wrap items-center gap-1.5">
+      <span class="font-bold text-ink mr-0.5">Đối chiếu cả phòng:</span>
+      ${chips}
+    </div>
+    <span class="font-mono text-[11px] font-extrabold text-emerald-700 shrink-0">
+      Tổng: ${calc.totalItems} cái (~${calc.estimatedKg.toFixed(2)} kg)
+    </span>
+  `;
+}
+
+/**
  * Full structural render of all member cards (used when adding/removing members or stepping counts).
  */
 export function renderMemberCards(state, calc) {
+  renderRoomTotalsStrip(calc);
   const container = document.getElementById('membersContainer');
   if (!container) return;
 
@@ -135,6 +167,7 @@ export function renderMemberCards(state, calc) {
  * Updates badges, active tile highlights, and gram labels in place without losing input focus.
  */
 export function patchMemberCards(state, calc) {
+  renderRoomTotalsStrip(calc);
   const visibleCats = getDisplayedCategories(state);
 
   state.members.forEach((member, idx) => {

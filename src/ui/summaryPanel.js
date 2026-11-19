@@ -128,6 +128,11 @@ export function renderSummaryPanel(state, calc) {
   if (zaloBox) {
     zaloBox.value = buildZaloMessage(calc, state.bank);
   }
+
+  const stickyTotal = document.getElementById('mobileStickyTotal');
+  const stickyMeta = document.getElementById('mobileStickyMeta');
+  if (stickyTotal) stickyTotal.textContent = fmtVND(calc.billMoney);
+  if (stickyMeta) stickyMeta.textContent = `${calc.totalItems} cái • ${calc.billKg.toFixed(2)} kg`;
 }
 
 /**

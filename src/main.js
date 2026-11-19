@@ -187,7 +187,7 @@ function bindEvents() {
   document.getElementById('bankAccountNo')?.addEventListener('input', handleBankChange);
   document.getElementById('bankOwnerName')?.addEventListener('input', handleBankChange);
 
-  document.getElementById('copyZaloBtn')?.addEventListener('click', async () => {
+  const triggerCopyZalo = async () => {
     const box = document.getElementById('zaloTextBox');
     if (!box) return;
     const copied = await copyToClipboard(box.value);
@@ -195,7 +195,14 @@ function bindEvents() {
       const toast = document.getElementById('copiedToast');
       toast?.classList.remove('hidden');
       setTimeout(() => toast?.classList.add('hidden'), 2500);
+      showToast('Đã copy tin nhắn báo tiền Zalo!', { durationMs: 2200 });
     }
+  };
+
+  document.getElementById('copyZaloBtn')?.addEventListener('click', triggerCopyZalo);
+  document.getElementById('mobileCopyZaloBtn')?.addEventListener('click', triggerCopyZalo);
+  document.getElementById('mobileJumpResultsBtn')?.addEventListener('click', () => {
+    document.getElementById('resultsColumn')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
   document.getElementById('vietQrModal')?.addEventListener('click', (e) => {
