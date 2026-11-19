@@ -1,0 +1,19 @@
+{
+  "name": "laundry-split",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Công cụ tính và chia tiền giặt sấy KTX theo số lượng đồ, tổng kg và tổng tiền hóa đơn.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.0",
+    "tailwindcss": "^4.1.0",
+    "vite": "^6.2.0",
+    "vitest": "^3.0.0"
+  }
+}
