@@ -35,9 +35,14 @@ npm run build     # Build production bundle vào dist/
 3. Gộp các lượt giặt vào `data/sample-bills.json` (hoặc truyền đường dẫn file tùy chọn) và chạy:
 
 ```bash
-npm run train
-# hoặc: node scripts/train-weights.mjs path/to/bills.json
+npm run train                     # Xem báo cáo LOOCV & chẩn đoán ngoại lai
+npm run train -- --apply          # Tự động cập nhật src/config/learnedWeights.js nếu cải thiện
+# hoặc: node scripts/train-weights.mjs path/to/bills.json --apply
 ```
+
+4. Nếu có ảnh bill giấy, chỉ cần gửi ảnh vào chat Antigravity — Workspace Skill `.agents/skills/ingest-laundry-bill/SKILL.md` sẽ hỗ trợ tách nhóm đồ ẩn danh, kiểm tra tổng số món và chạy lại `npm run train`.
+
+Sau khi chạy `--apply`, chạy `npm test` rồi `git push origin main` để GitHub Pages tự động cập nhật bộ định mức mới cho mọi người dùng.
 
 ## Deploy lên GitHub Pages
 
