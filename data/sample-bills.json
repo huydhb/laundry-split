@@ -15,5 +15,56 @@
     },
     "excludeFromTrain": false,
     "note": "Bill mẫu chuẩn #1 (đã tách chi tiết)"
+  },
+  {
+    "date": "2026-11-17",
+    "washMode": "normal",
+    "actualKg": 2,
+    "actualMoney": 30000,
+    "counts": {
+      "military": 6,
+      "sport": 0,
+      "tshirt": 0,
+      "sleepwear": 0,
+      "longPants": 0,
+      "towel": 0,
+      "other": 0
+    },
+    "excludeFromTrain": false,
+    "note": "Bill giặt thường (100% quân phục, áp sàn 30k)"
+  },
+  {
+    "date": "2026-11-18",
+    "washMode": "normal",
+    "actualKg": 8.3,
+    "actualMoney": 99600,
+    "counts": {
+      "military": 8,
+      "sport": 3,
+      "tshirt": 5,
+      "sleepwear": 4,
+      "longPants": 2,
+      "towel": 2,
+      "other": 0
+    },
+    "excludeFromTrain": true,
+    "note": "Bill giặt thường (2 jean + 9 áo phông/đồ ngủ chưa tách rõ số lượng từng loại)"
+  },
+  {
+    "date": "2026-11-19",
+    "washMode": "normal",
+    "actualKg": 5.5,
+    "actualMoney": 66000,
+    "counts": {
+      "military": 10,
+      "sport": 0,
+      "tshirt": 0,
+      "sleepwear": 4,
+      "longPants": 0,
+      "towel": 1,
+      "other": 0
+    },
+    "excludeFromTrain": false,
+    "note": "Bill giặt thường (4 cái đồ ngủ = 2 bộ, đã xác nhận số lượng)"
   }
 ]
