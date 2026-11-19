@@ -1,0 +1,16 @@
+{
+  "name": "Chia Tiền Giặt Sấy KTX",
+  "short_name": "Giặt Sấy KTX",
+  "description": "Tính và chia tiền giặt sấy KTX theo số lượng đồ, tổng kg và tổng tiền hóa đơn.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#F4F6F5",
+  "theme_color": "#059669",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
