@@ -23,25 +23,25 @@
           KG%
         </div>
         <div>
-          <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-ink leading-tight">
+          <h1 class="text-sm sm:text-lg font-extrabold tracking-tight text-ink leading-tight">
             Chia Tiền Giặt Sấy KTX
           </h1>
-          <p class="text-xs text-muted">
+          <p class="hidden sm:block text-xs text-muted">
             Nhập hóa đơn &amp; số lượng đồ từng bạn → Xuất tiền chẵn dễ chuyển khoản
           </p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 shrink-0">
         <button type="button" id="openCalibrationBtn"
-          class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink border border-line font-semibold text-xs transition inline-flex items-center gap-1.5 cursor-pointer"
+          class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink border border-line font-semibold text-xs transition inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
           title="Xem lịch sử bill và tối ưu định mức gram tự động">
-          <span>📊 Lịch sử &amp; Train</span>
+          <span>📊 <span class="hidden sm:inline">Lịch sử &amp; </span>Train</span>
           <span id="historyCountBadge" class="font-mono px-1.5 py-0.5 rounded-md bg-slate-900 text-white text-[10px] font-bold">0</span>
         </button>
 
         <button type="button" id="loadSampleBtn"
-          class="px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-semibold text-xs transition inline-flex items-center gap-1.5 shadow-2xs cursor-pointer"
+          class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-semibold text-xs transition inline-flex items-center gap-1.5 whitespace-nowrap shadow-2xs cursor-pointer"
           title="Nạp bộ số liệu mẫu (3.3kg - 56.100đ)">
           <span class="w-2 h-2 rounded-full bg-amber-500"></span>
           <span class="hidden sm:inline">Nạp dữ liệu mẫu</span>
@@ -364,22 +364,19 @@
   </footer>
 
   <!-- MOBILE STICKY ACTION BAR (< lg) -->
-  <div id="mobileStickyBar" class="lg:hidden fixed inset-x-0 bottom-0 z-30 bg-surface/95 backdrop-blur-xs border-t border-line px-4 py-2.5 shadow-lg">
-    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+  <div id="mobileStickyBar" class="lg:hidden fixed inset-x-0 bottom-0 z-30 bg-surface/95 backdrop-blur-xs border-t border-line px-3.5 py-2 shadow-lg">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-2">
       <div class="min-w-0">
-        <div class="text-[10px] font-bold uppercase tracking-wider text-muted">Tổng bill cần thu</div>
-        <div class="flex items-baseline gap-2">
-          <span id="mobileStickyTotal" class="font-mono text-base font-extrabold text-emerald-700 tabular-nums">0đ</span>
-          <span id="mobileStickyMeta" class="font-mono text-[11px] text-muted truncate">0 cái</span>
-        </div>
+        <div id="mobileStickyMeta" class="font-mono text-[10px] font-semibold text-muted truncate">0 cái • 0.0kg</div>
+        <div id="mobileStickyTotal" class="font-mono text-base font-extrabold text-emerald-700 leading-tight tabular-nums">0đ</div>
       </div>
-      <div class="flex items-center gap-2 shrink-0">
+      <div class="flex items-center gap-1.5 shrink-0">
         <button type="button" id="mobileJumpResultsBtn"
-          class="px-3 py-2 rounded-xl border border-line bg-slate-100 hover:bg-slate-200 text-xs font-bold text-ink transition cursor-pointer">
+          class="px-2.5 py-2 rounded-xl border border-line bg-slate-100 hover:bg-slate-200 text-xs font-bold text-ink whitespace-nowrap transition cursor-pointer">
           Kết quả ↓
         </button>
         <button type="button" id="mobileCopyZaloBtn"
-          class="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-xs font-bold text-white transition cursor-pointer">
+          class="px-2.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-xs font-bold text-white whitespace-nowrap transition cursor-pointer">
           Copy Zalo
         </button>
       </div>

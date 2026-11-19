@@ -132,7 +132,7 @@ export function renderSummaryPanel(state, calc) {
   const stickyTotal = document.getElementById('mobileStickyTotal');
   const stickyMeta = document.getElementById('mobileStickyMeta');
   if (stickyTotal) stickyTotal.textContent = fmtVND(calc.billMoney);
-  if (stickyMeta) stickyMeta.textContent = `${calc.totalItems} cái • ${calc.billKg.toFixed(2)} kg`;
+  if (stickyMeta) stickyMeta.textContent = `${calc.totalItems} cái • ${calc.billKg.toFixed(1)}kg`;
 }
 
 /**
