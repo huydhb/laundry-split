@@ -1,0 +1,19 @@
+[
+  {
+    "date": "2026-11-17",
+    "washMode": "urgent",
+    "actualKg": 3.3,
+    "actualMoney": 56100,
+    "counts": {
+      "military": 6,
+      "sport": 2,
+      "tshirt": 2,
+      "sleepwear": 0,
+      "longPants": 1,
+      "towel": 0,
+      "other": 0
+    },
+    "excludeFromTrain": false,
+    "note": "Bill mẫu chuẩn #1 (đã tách chi tiết)"
+  }
+]
