@@ -47,9 +47,81 @@ describe('splitEngine', () => {
 
     const res = computeSplit(state);
 
-    expect(res.targetCollected).toBe(57000);
-    expect(res.results.reduce((s, r) => s + r.finalMoney, 0)).toBe(57000);
+    expect(res.results.map((r) => r.finalMoney)).toEqual([21000, 25000, 12000]);
+    expect(res.targetCollected).toBe(58000);
+    expect(res.results.reduce((s, r) => s + r.finalMoney, 0)).toBe(58000);
+    expect(res.collectedDiff).toBe(1900);
     expect(res.targetCollected).toBeGreaterThanOrEqual(res.billMoney);
+  });
+
+  it('keeps identical uniform shares equal on the confirmed 14-piece bill', () => {
+    const state = {
+      washMode: 'normal', totalKg: 4.9, totalMoney: 58800, roundingStep: 1000,
+      grams: { military: 325, sleepwear: 165, longPants: 600 },
+      members: [
+        { id: 'a', counts: { military: 2 } },
+        { id: 'b', counts: { military: 2 } },
+        { id: 'c', counts: { military: 2, sleepwear: 2, longPants: 1 } },
+        { id: 'd', counts: { military: 2, sleepwear: 2, longPants: 1 } }
+      ]
+    };
+    const balanced = computeSplit({ ...state, roundingMode: 'nearest' });
+    expect(balanced.results.map((r) => r.finalMoney)).toEqual([9000, 8000, 21000, 21000]);
+    const rounded = computeSplit({ ...state, roundingMode: 'ceil' });
+    expect(rounded.totalItems).toBe(14);
+    expect(rounded.results.map((r) => r.finalMoney)).toEqual([9000, 9000, 21000, 21000]);
+    expect(rounded.targetCollected).toBe(60000);
+    expect(rounded.collectedDiff).toBe(1200);
+    const reversed = computeSplit({ ...state, roundingMode: 'ceil', members: [...state.members].reverse() });
+    expect(reversed.results.map((r) => r.finalMoney)).toEqual([21000, 21000, 9000, 9000]);
+  });
+
+  it.each([
+    [66000, [142, 142, 317, 258, 142], [10000, 10000, 21000, 18000, 10000], 3000]
+  ])('rounds equal shares equally for a %i bill regardless of member order', (money, weights, expected, diff) => {
+    // Synthetic weights reproduce the reported proportions, not receipt item counts.
+    const categories = weights.map((weight, i) => ({ id: `c${i}`, defaultGram: weight }));
+    const state = {
+      totalMoney: money, roundingStep: 1000, roundingMode: 'ceil',
+      members: categories.map((cat) => ({ id: cat.id, counts: { [cat.id]: 1 } }))
+    };
+    const res = computeSplit(state, categories);
+    expect(res.results.map((r) => r.finalMoney)).toEqual(expected);
+    expect(res.collectedDiff).toBe(diff);
+    expect(res.targetCollected).toBe(money + diff);
+    const reversed = computeSplit({ ...state, members: [...state.members].reverse() }, categories);
+    expect(reversed.results.map((r) => r.finalMoney)).toEqual([...expected].reverse());
+  });
+
+  it.each([1000, 500, 100])('keeps exact multiples and zero-item members unchanged at step %i', (step) => {
+    const res = computeSplit({
+      totalMoney: 25000, roundingStep: step, roundingMode: 'ceil', grams: { other: 100 },
+      members: [
+        { id: 'a', counts: { other: 14 } },
+        { id: 'b', counts: { other: 86 } },
+        { id: 'empty', counts: {} }
+      ]
+    });
+    expect(res.results.map((r) => r.finalMoney)).toEqual(step === 1000 ? [4000, 22000, 0] : [3500, 21500, 0]);
+    expect(res.collectedDiff).toBe(step === 1000 ? 1000 : 0);
+  });
+
+  it.each(['ceil', 'nearest'])('collects nothing for empty clothes or a zero bill in %s mode', (roundingMode) => {
+    const state = { totalMoney: 30000, roundingMode, members: [{ id: 'empty', counts: {} }] };
+    expect(computeSplit(state).targetCollected).toBe(0);
+    expect(computeSplit(state).collectedDiff).toBe(0);
+    expect(computeSplit({ ...state, totalMoney: 0, members: [{ id: 'a', counts: { military: 2 } }] }).targetCollected).toBe(0);
+  });
+
+  it('charges 10000 for two of six uniform pieces on a 30000 minimum bill', () => {
+    const res = computeSplit({
+      washMode: 'normal', totalKg: 2, totalMoney: 30000, roundingMode: 'ceil',
+      members: ['a', 'b', 'c'].map((id) => ({ id, counts: { military: 2 } }))
+    });
+    expect(res.expectedByRate).toBe(24000);
+    expect(res.appliedFloor).toBe(true);
+    expect(res.results.map((r) => r.finalMoney)).toEqual([10000, 10000, 10000]);
+    expect(res.collectedDiff).toBe(0);
   });
 
   it('returns targetCollected = 0 when all members have 0 items', () => {

@@ -59,6 +59,20 @@ describe('formatters & VietQR', () => {
     expect(msg).toContain('Giặt Khẩn Cấp (17k/kg)');
     expect(msg).toContain(`Tổng tiền bill: ${fmtVND(56100)} (Thu chẵn: ${fmtVND(56000)})`);
     expect(msg).toContain('1. Bạn 1:');
+    expect(msg).toContain(`Thu thiếu do làm tròn: ${fmtVND(100)} so với bill`);
     expect(msg).toContain('💳 CK: VCB 99887766 - NGUYEN VAN A');
+  });
+
+  it('discloses surplus from per-person rounding and omits it for empty clothes', () => {
+    const state = {
+      washMode: 'normal', totalKg: 2.5, totalMoney: 30000,
+      roundingStep: 1000, roundingMode: 'ceil',
+      members: ['a', 'b', 'c', 'd'].map((id) => ({ id, counts: { military: 2 } }))
+    };
+    const msg = buildZaloMessage(computeSplit(state));
+    expect(msg).toContain(`Thu chẵn: ${fmtVND(32000)}`);
+    expect(msg).toContain('Làm tròn lên từng người');
+    expect(msg).toContain(`Thu dư do làm tròn: ${fmtVND(2000)} so với bill`);
+    expect(buildZaloMessage(computeSplit({ ...state, members: [] }))).not.toMatch(/Thu dư|Thu thiếu|Thu chẵn/);
   });
 });

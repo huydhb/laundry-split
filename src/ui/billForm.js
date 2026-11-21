@@ -47,7 +47,7 @@ export function renderBillForm(state, calc) {
   const formulaHint = document.getElementById('moneyFormulaHint');
   if (formulaHint) {
     if (calc.billKg > 0 && calc.appliedFloor) {
-      formulaHint.textContent = `${calc.billKg} kg → Áp mức sàn tối thiểu ${fmtVND(calc.minFloor)}`;
+      formulaHint.textContent = `${calc.billKg} kg × ${fmtVND(calc.ratePerKg)}/kg = ${fmtVND(calc.expectedByRate)} → Áp sàn ${fmtVND(calc.minFloor)} cho cả lượt. Vì vậy, giặt ít có thể tốn hơn trên mỗi cái; quân phục không có giá cố định theo bộ.`;
     } else {
       formulaHint.textContent = `${calc.billKg} kg × ${calc.ratePerKg.toLocaleString('vi-VN')}đ/kg = ${fmtVND(calc.expectedByRate)}`;
     }
@@ -72,6 +72,13 @@ export function renderBillForm(state, calc) {
   }
 
   if (recRight) {
-    recRight.textContent = `Tổng đồ: ${calc.totalItems} cái (~${calc.estimatedKg.toFixed(2)} kg)`;
+    const kgDiff = calc.billKg - calc.estimatedKg;
+    const weightDifference = Math.abs(kgDiff) < 0.005
+      ? 'Cân thực tế khớp ước tính (chênh < 0,01 kg).'
+      : `Cân thực tế ${kgDiff > 0 ? 'cao' : 'thấp'} hơn ước tính ${Math.abs(kgDiff).toFixed(2)} kg.`;
+    const comparison = calc.hasItems && calc.billKg > 0
+      ? ` • ${weightDifference} Gram từng loại chỉ dùng chia tỷ lệ, không phải cân riêng từng người.`
+      : '';
+    recRight.textContent = `Tổng đồ: ${calc.totalItems} cái (~${calc.estimatedKg.toFixed(2)} kg)${comparison}`;
   }
 }

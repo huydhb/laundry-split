@@ -1,4 +1,4 @@
-import { getWashModeConfig } from '../config/pricing.js';
+import { getWashModeConfig, ROUNDING_MODES } from '../config/pricing.js';
 import { fmtVND } from './format.js';
 
 /**
@@ -13,9 +13,22 @@ export function buildZaloMessage(calc, bank) {
     '🧺 CHỐT TIỀN GIẶT SẤY KTX',
     `• Hình thức: ${modeCfg.shortLabel}`,
     `• Tổng đồ: ${calc.totalItems} cái | Tổng KG: ${calc.billKg.toFixed(2)} kg`,
-    `• Tổng tiền bill: ${fmtVND(calc.billMoney)}${collectedSuffix}`,
-    '--------------------'
+    `• Tổng tiền bill: ${fmtVND(calc.billMoney)}${collectedSuffix}`
   ];
+
+  if (calc.hasItems && calc.billMoney > 0) {
+    const method = calc.roundingMode === ROUNDING_MODES.ceil
+      ? 'Làm tròn lên từng người' : 'Chia theo tổng làm tròn gần nhất';
+    lines.push(`• ${method}, bước ${fmtVND(calc.roundingStep)}`);
+    if (hasCollectedDiff) {
+      const label = calc.collectedDiff > 0 ? 'Thu dư' : 'Thu thiếu';
+      lines.push(`• ${label} do làm tròn: ${fmtVND(Math.abs(calc.collectedDiff))} so với bill`);
+    }
+    if (calc.roundingMode === ROUNDING_MODES.nearest) {
+      lines.push('• Phân bổ tiền lẻ để khớp tổng thu; cùng tỷ lệ có thể lệch một bước làm tròn.');
+    }
+  }
+  lines.push('--------------------');
 
   const activeMembers = calc.results.filter((r) => r.items > 0);
   if (activeMembers.length === 0) {

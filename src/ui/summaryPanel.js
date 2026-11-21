@@ -11,6 +11,7 @@ export function renderSummaryPanel(state, calc) {
   for (const step of ROUNDING_STEPS) {
     const btn = document.getElementById(`roundStepBtn-${step}`);
     if (!btn) continue;
+    btn.setAttribute('aria-pressed', String(calc.roundingStep === step));
     btn.className = state.roundingStep === step
       ? 'px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-slate-900 text-white transition cursor-pointer'
       : 'px-2.5 py-1 rounded-md text-xs font-mono font-semibold text-muted hover:text-ink transition cursor-pointer';
@@ -20,6 +21,8 @@ export function renderSummaryPanel(state, calc) {
   const modeCeilBtn = document.getElementById('roundModeCeilBtn');
   if (modeNearestBtn && modeCeilBtn) {
     const isCeil = state.roundingMode === ROUNDING_MODES.ceil;
+    modeNearestBtn.setAttribute('aria-pressed', String(!isCeil));
+    modeCeilBtn.setAttribute('aria-pressed', String(isCeil));
     modeNearestBtn.className = !isCeil
       ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-white text-ink shadow-2xs transition cursor-pointer'
       : 'px-2 py-0.5 rounded text-[11px] font-semibold text-muted hover:text-ink transition cursor-pointer';
@@ -114,13 +117,13 @@ export function renderSummaryPanel(state, calc) {
     if (!calc.hasItems) {
       footnote.innerHTML = 'Nhập số lượng quần áo từng bạn ở cột trái để bắt đầu chia tỷ lệ tiền.';
     } else {
-      const diffBill = calc.targetCollected - calc.billMoney;
-      if (diffBill !== 0 && calc.billMoney > 0) {
-        const sign = diffBill > 0 ? '+' : '';
-        footnote.innerHTML = `Bill gốc <strong>${fmtVND(calc.billMoney)}</strong> chia chẵn thành <strong>${fmtVND(calc.targetCollected)}</strong> (${sign}${fmtVND(diffBill)}). Tổng từng bạn cộng lại khớp 100% mục tiêu thu.`;
-      } else {
-        footnote.innerHTML = `Tổng tiền các thành viên cộng lại khớp đúng <strong>${fmtVND(calc.targetCollected)}</strong> (100% hóa đơn).`;
-      }
+      const method = calc.roundingMode === ROUNDING_MODES.ceil
+        ? 'Làm tròn lên riêng từng người: cùng tỷ lệ chính xác sẽ đóng bằng nhau.'
+        : 'Phân bổ tiền lẻ để khớp tổng thu: cùng tỷ lệ có thể lệch một bước làm tròn; khi bằng nhau, ưu tiên thứ tự danh sách. Chọn “Làm tròn lên từng người” để tránh chênh lệch này.';
+      const difference = calc.collectedDiff === 0
+        ? 'Khớp đúng hóa đơn.'
+        : `${calc.collectedDiff > 0 ? 'Thu dư' : 'Thu thiếu'} do làm tròn: <strong>${fmtVND(Math.abs(calc.collectedDiff))}</strong> so với bill.`;
+      footnote.innerHTML = `${method} Tổng thu <strong>${fmtVND(calc.targetCollected)}</strong>. ${difference} Tỷ lệ hiển thị được rút gọn đến 1 chữ số thập phân.`;
     }
   }
 

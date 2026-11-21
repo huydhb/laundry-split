@@ -40,7 +40,7 @@ export function createDefaultState() {
     totalKg: 3.3,
     totalMoney: 56100,
     roundingStep: 1000,
-    roundingMode: ROUNDING_MODES.nearest,
+    roundingMode: ROUNDING_MODES.ceil,
     showOtherCategory: false,
     grams: getDefaultGrams(),
     bank: {
@@ -117,7 +117,8 @@ export function migrateState(parsed) {
 
   const washMode = WASH_MODES[parsed.washMode] ? parsed.washMode : base.washMode;
   const roundingStep = ROUNDING_STEPS.includes(parsed.roundingStep) ? parsed.roundingStep : base.roundingStep;
-  const roundingMode = parsed.roundingMode === ROUNDING_MODES.ceil ? ROUNDING_MODES.ceil : ROUNDING_MODES.nearest;
+  const roundingMode = Object.values(ROUNDING_MODES).includes(parsed.roundingMode)
+    ? parsed.roundingMode : base.roundingMode;
   const hasOtherItems = members.some((m) => (m.counts.other || 0) > 0);
 
   return {

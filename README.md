@@ -6,7 +6,9 @@ Công cụ web nhẹ giúp phòng KTX chia tiền giặt sấy công bằng theo
 
 - **Chia tiền chuẩn theo tỷ lệ trọng lượng & Largest Remainder Method**:
   - Hỗ trợ 2 chế độ giá: **Giặt Thường** (`12.000đ/kg`, sàn `30.000đ`) và **Giặt Khẩn Cấp** (`17.000đ/kg`, sàn `42.000đ`).
-  - Lựa chọn bước làm tròn `1.000đ` / `500đ` / `100đ` và hướng làm tròn **Gần nhất** hoặc **Làm tròn lên (người ứng bill không lỗ)**.
+  - Lựa chọn bước làm tròn `1.000đ` / `500đ` / `100đ`. **Làm tròn lên từng người** là mặc định cho phiên mới: cùng tỷ lệ chính xác đóng bằng nhau, ghi rõ tiền thu dư trên giao diện và tin nhắn Zalo. Giữ lựa chọn đã lưu của người dùng.
+  - **Khớp tổng gần nhất** dùng Largest Remainder để tổng các phần khớp tổng bill đã làm tròn; cùng tỷ lệ có thể lệch một bước do phân bổ phần lẻ (hòa thì ưu tiên thứ tự danh sách). Chế độ này có thể thu thiếu, số tiền thiếu cũng được ghi rõ.
+  - Giá sàn tính cho **cả lượt giặt**, không phải đơn giá quân phục: 6 cái/2kg bị áp sàn 30.000đ nên 2 cái chịu 10.000đ; lượt lớn hơn chia theo tỷ lệ trọng lượng trên bill thực tế nên số tiền cho 2 cái có thể thấp hơn. Gram ước tính ảnh hưởng tỷ lệ, không thay thế số kg cân thực tế.
 - **6 nhóm đồ thực tế + nhóm phụ Khác**:
   - *Quân phục, Đồ thể dục, Áo phông, Đồ ngủ, Quần dài / Jean, Khăn tắm nhỏ* (`min = 150g` chưa tính nước/ẩm) và *Khác*.
   - Thanh đối chiếu tổng đồ cả phòng để kiểm tra nhanh với biên nhận tiệm.

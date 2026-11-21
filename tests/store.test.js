@@ -18,6 +18,12 @@ function createMemoryStorage(initial = {}) {
 }
 
 describe('store & v3 migration', () => {
+  it('defaults to per-person rounding while preserving an explicit saved choice', () => {
+    expect(createDefaultState().roundingMode).toBe('ceil');
+    expect(migrateState({}).roundingMode).toBe('ceil');
+    expect(migrateState({ roundingMode: 'nearest' }).roundingMode).toBe('nearest');
+    expect(migrateState({ roundingMode: 'ceil' }).roundingMode).toBe('ceil');
+  });
   it('migrates legacy v3 state cleanly into 6+1 categories', () => {
     const legacyV3 = {
       washMode: 'normal',

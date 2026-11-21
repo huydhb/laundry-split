@@ -2,7 +2,7 @@ import { BADGE_COLORS, CLOTHING_CATEGORIES } from '../config/categories.js';
 import { calculateExpectedBillMoney, getWashModeConfig, ROUNDING_MODES } from '../config/pricing.js';
 
 /**
- * Computes each member's fair share using estimated item grams and Largest Remainder rounding.
+ * Splits by estimated grams, rounding each share up or balancing the rounded bill total.
  * Pure function suitable for both browser UI and headless tests.
  */
 export function computeSplit(state, categories = CLOTHING_CATEGORIES) {
@@ -56,9 +56,7 @@ export function computeSplit(state, categories = CLOTHING_CATEGORIES) {
   // If no clothes are entered yet, do not pretend money is split among zero-item members.
   let targetCollected = 0;
   if (hasItems && billMoney > 0) {
-    targetCollected = roundingMode === ROUNDING_MODES.ceil
-      ? Math.ceil(billMoney / step) * step
-      : Math.round(billMoney / step) * step;
+    targetCollected = Math.round(billMoney / step) * step;
   }
 
   const totalUnits = targetCollected > 0 ? Math.round(targetCollected / step) : 0;
@@ -68,7 +66,7 @@ export function computeSplit(state, categories = CLOTHING_CATEGORIES) {
     const ratio = hasItems ? member.grams / totalEstimatedGrams : 0;
     const pct = ratio * 100;
     const allocatedKg = billKg * ratio;
-    const exactMoney = billMoney * ratio;
+    const exactMoney = hasItems ? billMoney * member.grams / totalEstimatedGrams : 0;
 
     const exactUnits = totalUnits * ratio;
     const floorUnits = Math.floor(exactUnits);
@@ -89,22 +87,32 @@ export function computeSplit(state, categories = CLOTHING_CATEGORIES) {
     };
   });
 
-  const leftoverUnits = totalUnits - sumFloorUnits;
-  const ranked = results
-    .filter((r) => r.grams > 0)
-    .sort((a, b) => {
-      const remDiff = b.remainder - a.remainder;
-      if (Math.abs(remDiff) > 1e-9) return remDiff;
-      if (b.grams !== a.grams) return b.grams - a.grams;
-      return a.index - b.index;
-    });
+  if (roundingMode === ROUNDING_MODES.ceil) {
+    for (const r of results) {
+      // Multiply before dividing so an exact step boundary does not round up due to ratio drift.
+      r.finalMoney = hasItems
+        ? Math.ceil((billMoney * r.grams) / (totalEstimatedGrams * step)) * step
+        : 0;
+    }
+    targetCollected = results.reduce((sum, r) => sum + r.finalMoney, 0);
+  } else {
+    const leftoverUnits = totalUnits - sumFloorUnits;
+    const ranked = results
+      .filter((r) => r.grams > 0)
+      .sort((a, b) => {
+        const remDiff = b.remainder - a.remainder;
+        if (Math.abs(remDiff) > 1e-9) return remDiff;
+        if (b.grams !== a.grams) return b.grams - a.grams;
+        return a.index - b.index;
+      });
 
-  for (let i = 0; i < leftoverUnits && i < ranked.length; i++) {
-    ranked[i].bonusUnit = 1;
-  }
+    for (let i = 0; i < leftoverUnits && i < ranked.length; i++) {
+      ranked[i].bonusUnit = 1;
+    }
 
-  for (const r of results) {
-    r.finalMoney = hasItems ? (r.floorUnits + r.bonusUnit) * step : 0;
+    for (const r of results) {
+      r.finalMoney = hasItems ? (r.floorUnits + r.bonusUnit) * step : 0;
+    }
   }
 
   return {
@@ -124,6 +132,7 @@ export function computeSplit(state, categories = CLOTHING_CATEGORIES) {
     billKg,
     billMoney,
     targetCollected,
+    collectedDiff: hasItems ? targetCollected - billMoney : 0,
     results
   };
 }
