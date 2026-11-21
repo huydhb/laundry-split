@@ -66,5 +66,22 @@
     },
     "excludeFromTrain": false,
     "note": "Bill giặt thường (4 cái đồ ngủ = 2 bộ, đã xác nhận số lượng)"
+  },
+  {
+    "date": "2026-11-20",
+    "washMode": "normal",
+    "actualKg": 4.9,
+    "actualMoney": 58800,
+    "counts": {
+      "military": 8,
+      "sport": 0,
+      "tshirt": 0,
+      "sleepwear": 4,
+      "longPants": 2,
+      "towel": 0,
+      "other": 0
+    },
+    "excludeFromTrain": false,
+    "note": "Lượt giặt thường: đã xác nhận 14 cái theo ảnh ứng dụng (8 quân phục, 4 đồ ngủ, 2 quần dài); phiếu giấy in 12 cái (6 quân phục, 6 đồ thường)."
   }
 ]
